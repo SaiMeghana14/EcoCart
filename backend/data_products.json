@@ -1,0 +1,20 @@
+```json
+[
+    {
+        "id": 1,
+        "name": "Eco-friendly Shampoo",
+        "isOrganic": true,
+        "fairTrade": true,
+        "carbonFootprint": 3.2,
+        "plasticPackaging": false
+    },
+    {
+        "id": 2,
+        "name": "Regular Toothpaste",
+        "isOrganic": false,
+        "fairTrade": false,
+        "carbonFootprint": 6.0,
+        "plasticPackaging": true
+    }
+]
+```
