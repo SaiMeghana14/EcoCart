@@ -5,9 +5,11 @@ import json
 
 # ✅ Initialize Firebase Firestore using secrets.toml 'firebase' key
 def init_firestore():
-    # Load the JSON string from secrets.toml
-    firebase_json = st.secrets["firebase"]
-    firebase_dict = json.loads(firebase_json)
+    firebase_dict = st.secrets["firebase"]
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(firebase_dict)
+        firebase_admin.initialize_app(cred)
+    return firestore.client()
 
     # Initialize Firebase App (avoids duplicate initialization in Streamlit reruns)
     if not firebase_admin._apps:
