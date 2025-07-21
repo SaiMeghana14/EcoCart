@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Reusable Bamboo Toothbrush",
+        "material": "Bamboo",
+        "origin": "Local",
+        "packaging": "Recyclable",
+        "description": "Eco-friendly toothbrush made from sustainable bamboo."
+    },
+    {
+        "name": "Organic Cotton T-shirt",
+        "material": "Organic Cotton",
+        "origin": "Local",
+        "packaging": "Recyclable",
+        "description": "Comfortable and sustainable organic cotton T-shirt."
+    },
+    {
+        "name": "Plastic Water Bottle",
+        "material": "Plastic",
+        "origin": "Imported",
+        "packaging": "Plastic",
+        "description": "Standard plastic water bottle (non-eco)."
+    }
+]
