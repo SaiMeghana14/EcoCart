@@ -3,6 +3,12 @@ from components import (
     product_list, barcode_scanner, dashboard, compare_products,
     coupons, daily_challenges, eco_news_feed, login, leaderboard
 )
+from helpers import firebase_rewards
+
+firebase_config = st.secrets["firebase"]
+db = firebase_rewards.init_firestore(firebase_config)
+
+points = firebase_rewards.get_rewards(db, user_id)
 
 st.set_page_config(page_title="EcoCart Streamlit", layout="wide")
 
