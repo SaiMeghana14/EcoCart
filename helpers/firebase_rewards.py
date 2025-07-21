@@ -3,21 +3,22 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 def init_firestore():
-    firebase_dict = st.secrets["firebase"].to_dict()
+    # Convert secrets.toml firebase section to dict
+    firebase_dict = dict(st.secrets["firebase"])
     cred = credentials.Certificate(firebase_dict)
+
+    # Initialize Firebase Admin SDK if not already initialized
     if not firebase_admin._apps:
         firebase_admin.initialize_app(cred)
+
     return firestore.client()
 
 def get_rewards(db, user_id):
-    try:
-        doc = db.collection('rewards').document(user_id).get()
-        if doc.exists:
-            return doc.to_dict().get('points', 0)
-        else:
-            return 0
-    except Exception as e:
-        st.error(f"Failed to fetch rewards: {e}")
+    doc_ref = db.collection("rewards").document(user_id)
+    doc = doc_ref.get()
+    if doc.exists:
+        return doc.to_dict().get("points", 0)
+    else:
         return 0
 
 def update_rewards(db, user_id, points):
