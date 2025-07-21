@@ -1,41 +1,43 @@
 import streamlit as st
-import firebase_admin
-from firebase_admin import credentials, firestore
+import pandas as pd
+import gspread
+from google.oauth2.service_account import Credentials
 
-def init_firestore():
-    # Convert SecretValue to string dictionary
-    firebase_dict = {k: str(v) for k, v in st.secrets["firebase"].items()}
-    st.write(firebase_dict)  # ✅ Shows you what's actually being parsed
-    cred = credentials.Certificate(firebase_dict)
+scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+client = gspread.authorize(creds)
 
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred)
+sheet = client.open("RewardsLeaderboard").worksheet("Rewards")
 
-    return firestore.client()
+def get_rewards(user_id):
+    data = sheet.get_all_records()
+    for row in data:
+        if row['user_id'] == user_id:
+            return row['points']
+    return 0
 
-def get_rewards(db, user_id):
-    doc_ref = db.collection("rewards").document(user_id)
-    doc = doc_ref.get()
-    if doc.exists:
-        return doc.to_dict().get("points", 0)
-    else:
-        return 0
+def update_rewards(user_id, points):
+    data = sheet.get_all_records()
+    for idx, row in enumerate(data):
+        if row['user_id'] == user_id:
+            sheet.update_cell(idx+2, 2, points)  # Assuming column 2 = points
+            return True
+    sheet.append_row([user_id, points])
+    return True
 
-def update_rewards(db, user_id, points):
-    try:
-        db.collection('rewards').document(user_id).set({"points": points}, merge=True)
-        return True
-    except Exception as e:
-        st.error(f"Failed to update rewards: {e}")
-        return False
+def get_leaderboard():
+    data = pd.DataFrame(sheet.get_all_records())
+    return data.sort_values(by='points', ascending=False)
 
-# ✅ Update leaderboard with username and points
-def add_to_leaderboard(db, username, points):
-    try:
-        db.collection("leaderboard").document(username).set({
-            "username": username,
-            "points": points
-        }, merge=True)
-        st.success("✅ Leaderboard updated!")
-    except Exception as e:
-        st.error(f"⚠️ Failed to update leaderboard: {e}")
+# ✅ Demo UI
+user = st.text_input("Enter User ID")
+if st.button("Show Rewards"):
+    st.write(f"Points: {get_rewards(user)}")
+
+if st.button("Add 10 points"):
+    points = get_rewards(user) + 10
+    update_rewards(user, points)
+    st.success(f"Updated to {points} points!")
+
+st.subheader("Leaderboard")
+st.dataframe(get_leaderboard())
