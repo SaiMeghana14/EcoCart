@@ -1,6 +1,7 @@
 streamlit
 requests
-firebase-admin
 sentence-transformers
 pandas
 streamlit-folium
+gspread
+google-auth
