@@ -6,7 +6,7 @@ from components import (
 from helpers import firebase_rewards
 
 firebase_config = st.secrets["firebase"]
-db = firebase_rewards.init_firestore(firebase_config)
+db = firebase_rewards.init_firestore()
 
 points = firebase_rewards.get_rewards(db, user_id)
 
