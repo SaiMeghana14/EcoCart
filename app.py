@@ -5,6 +5,8 @@ from components import (
 )
 from helpers import firebase_rewards
 
+st.write("✅ Secrets Keys:", list(st.secrets.keys()))
+
 # ✅ Initialize Firebase Firestore
 db = firebase_rewards.init_firestore()
 
