@@ -3,6 +3,25 @@ import gspread
 from google.oauth2.service_account import Credentials
 import random
 
+def get_client():
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    return gspread.authorize(creds)
+
+st.sidebar.header("🔍 Debug: Google Sheets Access Test")
+try:
+    client = get_client()
+    st.sidebar.success("✅ Auth OK")
+    files = client.list_spreadsheet_files()
+    st.sidebar.write("Available sheets:", [f['name'] for f in files])
+    sheet = client.open("EcoCart Rewards").worksheet("Leaderboard")
+    st.sidebar.success("✅ Found worksheet 'Leaderboard'")
+except Exception as e:
+    st.sidebar.error("❌ " + repr(e))
+st.stop()
+
 # ✅ Google Sheets Setup
 def get_gsheet_client():
     credentials = Credentials.from_service_account_info(
