@@ -3,41 +3,40 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import json
 
-# ✅ Initialize Firebase Firestore
+# ✅ Initialize Firestore using JSON string from secrets.toml
 def init_firestore():
-    # Convert Streamlit TOML secrets to a valid JSON-style Python dict
-    firebase_json = json.loads(json.dumps(dict(st.secrets["firebase"])))
-    cred = credentials.Certificate(firebase_json)
+    # Load JSON string from secrets.toml
+    firebase_json = st.secrets["firebase_json"]
+    firebase_dict = json.loads(firebase_json)
 
-    # ✅ Avoid reinitialization in Streamlit reruns
+    # ✅ Initialize Firebase App only once (avoids re-init errors)
     if not firebase_admin._apps:
+        cred = credentials.Certificate(firebase_dict)
         firebase_admin.initialize_app(cred)
 
-    db = firestore.client()
-    return db
+    return firestore.client()
 
-# ✅ Get Rewards Points for a User
+# ✅ Fetch user rewards
 def get_rewards(db, user_id):
     try:
         doc = db.collection("rewards").document(user_id).get()
         if doc.exists:
-            data = doc.to_dict()
-            return data.get("points", 0)
+            return doc.to_dict().get("points", 0)
         else:
             return 0
     except Exception as e:
         st.error(f"⚠️ Error fetching rewards: {e}")
         return 0
 
-# ✅ Update Rewards Points for a User
+# ✅ Update user rewards
 def update_rewards(db, user_id, points):
     try:
         db.collection("rewards").document(user_id).set({"points": points}, merge=True)
-        st.success("✅ Rewards updated successfully!")
+        st.success("✅ Rewards updated!")
     except Exception as e:
         st.error(f"⚠️ Error updating rewards: {e}")
 
-# ✅ Add Leaderboard Points 
+# ✅ Update leaderboard points
 def add_to_leaderboard(db, username, points):
     try:
         db.collection("leaderboard").document(username).set({
