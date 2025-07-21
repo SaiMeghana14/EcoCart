@@ -1,47 +1,32 @@
+# helpers/google_rewards.py
+
 import gspread
 import streamlit as st
-from google.oauth2.service_account import Credentials
+from oauth2client.service_account import ServiceAccountCredentials
 
-# --- Google Sheets Setup ---
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-SHEET_NAME = "EcoCart_Rewards"  # You can rename this as needed
+def get_gsheet_client():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    client = gspread.authorize(creds)
+    return client
 
-def get_sheet():
-    """Authorize and return Google Sheet worksheet."""
-    credentials = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=SCOPES
-    )
-    client = gspread.authorize(credentials)
-    
-    try:
-        sheet = client.open(SHEET_NAME).sheet1
-    except gspread.exceptions.SpreadsheetNotFound:
-        st.error(f"Spreadsheet '{SHEET_NAME}' not found. Make sure it exists in your Google Drive.")
-        st.stop()
-    
+def get_sheet(sheet_name="Rewards"):
+    client = get_gsheet_client()
+    sheet = client.open(st.secrets["private_gsheets_url"]).worksheet(sheet_name)
     return sheet
 
-def get_rewards(sheet, user_id):
-    """Get the current reward points for a user."""
-    try:
-        records = sheet.get_all_records()
-        for row in records:
-            if row.get("user_id") == user_id:
-                return row.get("points", 0)
-    except Exception as e:
-        st.error(f"Failed to read sheet: {e}")
-    
-    return 0
+def get_rewards(sheet):
+    records = sheet.get_all_records()
+    return records
 
-def update_rewards(sheet, user_id, points_to_add):
-    """Update reward points for a user."""
-    try:
-        cell = sheet.find(user_id)
-        current = int(sheet.cell(cell.row, cell.col + 1).value)
-        sheet.update_cell(cell.row, cell.col + 1, current + points_to_add)
-    except gspread.exceptions.CellNotFound:
-        # New user – add to sheet
-        sheet.append_row([user_id, points_to_add])
-    except Exception as e:
-        st.error(f"Failed to update rewards: {e}")
+def update_rewards(sheet, user, new_points):
+    records = sheet.get_all_records()
+    usernames = [record["Name"] for record in records]
+
+    if user in usernames:
+        row_index = usernames.index(user) + 2  # 1-based index + header row
+        current_points = int(sheet.cell(row_index, 2).value)
+        updated_points = current_points + new_points
+        sheet.update_cell(row_index, 2, updated_points)
+    else:
+        sheet.append_row([user, new_points])
