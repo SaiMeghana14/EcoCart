@@ -1,10 +1,10 @@
+import streamlit as st
 import json
 from firebase_admin import credentials, firestore, initialize_app
 
-def init_firestore(firebase_config):
-    cred = credentials.Certificate(firebase_config)
-    app = initialize_app(cred)
-    return firestore.client(app)
+cred = credentials.Certificate(st.secrets["firebase"])
+initialize_app(cred)
+db = firestore.client()
 
 def get_rewards(db, user_id):
     doc = db.collection("rewards").document(user_id).get()
