@@ -5,36 +5,30 @@ from components import (
 )
 from helpers import firebase_rewards
 
-st.write("✅ Secrets Keys:", list(st.secrets.keys()))
-
-# ✅ Initialize Firebase Firestore
+# ✅ Initialize Firebase
 db = firebase_rewards.init_firestore()
 
-if 'user_id' in st.session_state:
-    user_id = st.session_state.user_id
-    points = firebase_rewards.get_rewards(db, user_id)
-    st.sidebar.success(f"🎁 Points: {points}")
-else:
-    st.sidebar.info("🔓 Please log in to track rewards!")
-    
-# ✅ Streamlit App Config
+# ✅ Session state setup
+if "user_id" not in st.session_state:
+    st.session_state.user_id = None
+
 st.set_page_config(page_title="EcoCart Streamlit", layout="wide")
+
 st.title("🛒 EcoCart – Sustainable Smart Shopping Assistant (Streamlit Edition)")
 
-# ✅ Sidebar Navigation
+if st.session_state.user_id:
+    points = firebase_rewards.get_rewards(db, st.session_state.user_id)
+    st.sidebar.success(f"Logged in as: {st.session_state.user_id}")
+    st.sidebar.info(f"🌱 Your Eco Points: {points}")
+else:
+    st.sidebar.warning("Not logged in. Login to track your points.")
+
 menu = st.sidebar.radio(
     "Navigate", 
     ["Product List", "Barcode Lookup", "Nearby Stores", "Compare Products", 
      "Daily Challenges", "Coupons", "Leaderboard", "Eco News", "Login"]
 )
 
-# ✅ Optional: Display Points if Logged In
-if 'user_id' in st.session_state:
-    user_id = st.session_state.user_id
-    points = firebase_rewards.get_rewards(db, user_id)
-    st.sidebar.success(f"🎁 Points: {points}")
-
-# ✅ Routing
 if menu == "Product List":
     product_list.show()
 
