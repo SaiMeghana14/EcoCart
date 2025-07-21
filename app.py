@@ -5,21 +5,27 @@ from components import (
 )
 from helpers import firebase_rewards
 
-firebase_config = st.secrets["firebase"]
+# ✅ Initialize Firebase Firestore
 db = firebase_rewards.init_firestore()
 
-points = firebase_rewards.get_rewards(db, user_id)
-
+# ✅ Streamlit App Config
 st.set_page_config(page_title="EcoCart Streamlit", layout="wide")
-
 st.title("🛒 EcoCart – Sustainable Smart Shopping Assistant (Streamlit Edition)")
 
+# ✅ Sidebar Navigation
 menu = st.sidebar.radio(
     "Navigate", 
     ["Product List", "Barcode Lookup", "Nearby Stores", "Compare Products", 
      "Daily Challenges", "Coupons", "Leaderboard", "Eco News", "Login"]
 )
 
+# ✅ Optional: Display Points if Logged In
+if 'user_id' in st.session_state:
+    user_id = st.session_state.user_id
+    points = firebase_rewards.get_rewards(db, user_id)
+    st.sidebar.success(f"🎁 Points: {points}")
+
+# ✅ Routing
 if menu == "Product List":
     product_list.show()
 
