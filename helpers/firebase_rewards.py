@@ -1,8 +1,9 @@
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, initialize_app
 
-cred = credentials.Certificate("backend/firebaseServiceAccount.json")
-firebase_admin.initialize_app(cred)
+firebase_config = st.secrets["firebase"]
+cred = credentials.Certificate(json.loads(json.dumps(firebase_config)))
+initialize_app(cred)
 db = firestore.client()
 
 def get_rewards(user_id):
