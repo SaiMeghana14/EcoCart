@@ -8,6 +8,13 @@ from helpers import firebase_rewards
 # ✅ Initialize Firebase Firestore
 db = firebase_rewards.init_firestore()
 
+if 'user_id' in st.session_state:
+    user_id = st.session_state.user_id
+    points = firebase_rewards.get_rewards(db, user_id)
+    st.sidebar.success(f"🎁 Points: {points}")
+else:
+    st.sidebar.info("🔓 Please log in to track rewards!")
+    
 # ✅ Streamlit App Config
 st.set_page_config(page_title="EcoCart Streamlit", layout="wide")
 st.title("🛒 EcoCart – Sustainable Smart Shopping Assistant (Streamlit Edition)")
