@@ -5,6 +5,7 @@ from firebase_admin import credentials, firestore
 def init_firestore():
     # Convert SecretValue to string dictionary
     firebase_dict = {k: str(v) for k, v in st.secrets["firebase"].items()}
+    st.write(firebase_dict)  # ✅ Shows you what's actually being parsed
     cred = credentials.Certificate(firebase_dict)
 
     if not firebase_admin._apps:
