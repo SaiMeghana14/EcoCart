@@ -2,7 +2,7 @@ import json
 from firebase_admin import credentials, firestore, initialize_app
 
 def init_firestore(firebase_config):
-    cred = credentials.Certificate(json.loads(json.dumps(firebase_config)))
+    cred = credentials.Certificate(firebase_config)
     app = initialize_app(cred)
     return firestore.client(app)
 
