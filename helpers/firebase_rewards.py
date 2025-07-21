@@ -5,6 +5,7 @@ from firebase_admin import credentials, firestore
 def init_firestore():
     # Convert secrets.toml firebase section to dict
     firebase_dict = dict(st.secrets["firebase"])
+    firebase_dict = {k: str(v) for k, v in st.secrets["firebase"].items()}
     cred = credentials.Certificate(firebase_dict)
 
     # Initialize Firebase Admin SDK if not already initialized
