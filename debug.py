@@ -23,10 +23,7 @@ spreadsheet_name = st.secrets["global"].get("spreadsheet_name", None)
 st.write("📄 Retrieved Spreadsheet Name:", spreadsheet_name)
 spreadsheet_name = st.secrets.get("spreadsheet_name", "").strip()
 
-if spreadsheet_name:
-    st.info(f"📄 Retrieved Spreadsheet Name: **{spreadsheet_name}**")
-else:
-    st.error("❌ `spreadsheet_name` is missing in secrets.")
+st.info(f"📄 Retrieved Spreadsheet Name: **{spreadsheet_name}**")
 
 # ✅ Open Spreadsheet
 try:
