@@ -2,34 +2,42 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 
-# ✅ Check keys present in secrets
-st.sidebar.header("🔍 Debug: Google Sheets Access Test")
-st.sidebar.write("Secrets Keys:", list(st.secrets.keys()))
+st.title("🔍 EcoCart Google Sheets Debugger")
 
-# ✅ Debugging Client Access
-def get_client():
-    credentials = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=[
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
-    )
-    return gspread.authorize(credentials)
+# ✅ Check secrets keys
+st.subheader("1️⃣ Secrets Loaded")
+st.write("Secrets keys available:", list(st.secrets.keys()))
 
+# ✅ Setup Google Sheets Client
 try:
-    client = get_client()
-    st.sidebar.success("✅ Auth OK")
-
-    # List accessible spreadsheets
-    files = client.list_spreadsheet_files()
-    st.sidebar.write("Available Sheets:", [f["name"] for f in files])
-
-    # Access EcoCart Rewards
-    sheet = client.open("EcoCart Rewards").worksheet("Leaderboard")
-    st.sidebar.success("✅ Found worksheet 'Leaderboard'")
-
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scopes)
+    client = gspread.authorize(creds)
+    st.success("✅ Google Sheets client initialized!")
 except Exception as e:
-    st.sidebar.error(f"❌ Error: {e}")
+    st.error(f"❌ Error initializing Sheets client: {e}")
+    st.stop()
 
-st.stop()
+# ✅ Check Spreadsheet Name
+spreadsheet_name = st.secrets.get("spreadsheet_name", None)
+if not spreadsheet_name:
+    st.error("❌ `spreadsheet_name` is missing in secrets.")
+    st.stop()
+else:
+    st.info(f"📄 Spreadsheet Name: **{spreadsheet_name}**")
+
+# ✅ Open Spreadsheet
+try:
+    sheet = client.open(spreadsheet_name).worksheet("Leaderboard")
+    st.success("✅ Connected to 'Leaderboard' worksheet!")
+except Exception as e:
+    st.error(f"❌ Error accessing worksheet: {e}")
+    st.stop()
+
+# ✅ Display first few rows
+try:
+    records = sheet.get_all_records()
+    st.subheader("📊 Preview Sheet Records:")
+    st.dataframe(records[:10])  # show first 10 rows
+except Exception as e:
+    st.error(f"❌ Error fetching records: {e}")
