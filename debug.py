@@ -19,7 +19,7 @@ except Exception as e:
     st.stop()
 
 # ✅ Check Spreadsheet Name
-spreadsheet_name = st.secrets.get("spreadsheet_name", None)
+spreadsheet_name = st.secrets.get["global"]("spreadsheet_name", None)
 st.write("📄 Retrieved Spreadsheet Name:", spreadsheet_name)
 spreadsheet_name = st.secrets.get("spreadsheet_name", "").strip()
 
