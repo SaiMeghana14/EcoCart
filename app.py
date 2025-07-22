@@ -3,26 +3,6 @@ import gspread
 from google.oauth2.service_account import Credentials
 import random
 
-def get_client():
-    creds = Credentials.from_service_account_info(
-        st.write("Secrets Keys:", list(st.secrets.keys()))
-        st.secrets["gcp_service_account"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
-    )
-    return gspread.authorize(creds)
-
-st.sidebar.header("🔍 Debug: Google Sheets Access Test")
-try:
-    client = get_client()
-    st.sidebar.success("✅ Auth OK")
-    files = client.list_spreadsheet_files()
-    st.sidebar.write("Available sheets:", [f['name'] for f in files])
-    sheet = client.open("EcoCart Rewards").worksheet("Leaderboard")
-    st.sidebar.success("✅ Found worksheet 'Leaderboard'")
-except Exception as e:
-    st.sidebar.error("❌ " + repr(e))
-st.stop()
-
 # ✅ Google Sheets Setup
 def get_gsheet_client():
     credentials = Credentials.from_service_account_info(
@@ -42,12 +22,15 @@ def get_rewards(sheet, username):
     data = sheet.get_all_records()
     for row in data:
         if row['Username'] == username:
-            return row['Points']
+            try:
+                return int(row['Points'])
+            except:
+                return 0
     return 0
 
 def update_rewards(sheet, username, points):
     data = sheet.get_all_records()
-    for i, row in enumerate(data, start=2):
+    for i, row in enumerate(data, start=2):  # start=2 to skip header
         if row['Username'] == username:
             sheet.update_cell(i, 2, points)
             return True
@@ -83,14 +66,18 @@ def assign_reward(points):
     else:
         return "🌍 Sustainability Champion"
 
-# ✅ EcoCart Streamlit App
+# ✅ EcoCart Streamlit App Pages
 from components import (
     product_list, barcode_scanner, dashboard, compare_products,
     coupons, daily_challenges, eco_news_feed, login, leaderboard
 )
 
-# ✅ Initialize Sheet
-sheet = get_sheet()
+# ✅ Initialize Sheet Safely
+try:
+    sheet = get_sheet()
+except Exception as e:
+    st.error(f"Failed to connect to Google Sheets: {e}")
+    st.stop()
 
 if "user_id" not in st.session_state:
     st.session_state.user_id = None
@@ -98,6 +85,7 @@ if "user_id" not in st.session_state:
 st.set_page_config(page_title="EcoCart Streamlit", layout="wide")
 st.title("🛒 EcoCart – Sustainable Smart Shopping Assistant (Streamlit Edition)")
 
+# ✅ Sidebar Rewards Display
 if st.session_state.user_id:
     points = get_rewards(sheet, st.session_state.user_id)
     st.sidebar.success(f"Logged in as: {st.session_state.user_id}")
@@ -105,6 +93,7 @@ if st.session_state.user_id:
 else:
     st.sidebar.warning("Not logged in. Login to track your points.")
 
+# ✅ Sidebar Navigation
 menu = st.sidebar.radio(
     "Navigate",
     [
@@ -142,7 +131,6 @@ elif menu == "Login":
 
 elif menu == "Eco Impact Tracker":
     st.header("🌍 Eco-Friendly Product Tracker")
-
     username = st.session_state.user_id
     if not username:
         st.warning("Please login first to track rewards.")
@@ -166,6 +154,8 @@ elif menu == "Eco Impact Tracker":
 
         if st.button("Show Eco Leaderboard"):
             data = sheet.get_all_records()
-            sorted_leaderboard = sorted(data, key=lambda x: x['Points'], reverse=True)
+            sorted_leaderboard = sorted(
+                data, key=lambda x: int(x['Points']), reverse=True
+            )
             st.write("## 🏆 Leaderboard")
             st.table(sorted_leaderboard)
