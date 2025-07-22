@@ -5,6 +5,7 @@ import random
 
 def get_client():
     creds = Credentials.from_service_account_info(
+        st.write("Secrets Keys:", list(st.secrets.keys()))
         st.secrets["gcp_service_account"],
         scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
