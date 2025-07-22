@@ -20,6 +20,9 @@ except Exception as e:
 
 # ✅ Check Spreadsheet Name
 spreadsheet_name = st.secrets.get("spreadsheet_name", None)
+st.write("📄 Retrieved Spreadsheet Name:", spreadsheet_name)
+spreadsheet_name = st.secrets.get("spreadsheet_name", "").strip()
+
 if not spreadsheet_name:
     st.error("❌ `spreadsheet_name` is missing in secrets.")
     st.stop()
